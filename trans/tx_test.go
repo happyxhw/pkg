@@ -29,6 +29,10 @@ type User struct {
 	DeletedAt soft_delete.DeletedAt `gorm:"column:deleted_at;default:0" json:"deleted_at"`
 }
 
+func (u User) TableName() string {
+	return "user"
+}
+
 func TestTx_ExecWithTx(t *testing.T) {
 	gdb, gdbMock, _ := mymock.MockEqualDB()
 	sql := `SELECT * FROM "user" WHERE id = $1 AND "user"."deleted_at" = $2`
