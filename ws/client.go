@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 
-	"github.com/happyxhw/iself/pkg/log"
+	"github.com/happyxhw/pkg/log"
 )
 
 var (

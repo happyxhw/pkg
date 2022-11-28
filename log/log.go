@@ -8,8 +8,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/happyxhw/iself/pkg/cx"
 	"github.com/happyxhw/pkg/constant"
+	"github.com/happyxhw/pkg/cx"
 )
 
 // Config for log

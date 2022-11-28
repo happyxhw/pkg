@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/happyxhw/iself/pkg/cx"
+	"github.com/happyxhw/pkg/cx"
 )
 
 type Trans struct {
