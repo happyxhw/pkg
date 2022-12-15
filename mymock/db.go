@@ -2,9 +2,10 @@ package mymock
 
 import (
 	"database/sql"
-	"log"
 	"os"
 	"time"
+
+	stdlog "log" //nolint:depguard
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"gorm.io/driver/postgres"
@@ -33,7 +34,7 @@ func MockRegexDB() (*gorm.DB, sqlmock.Sqlmock, error) {
 
 func gormDB(db *sql.DB) *gorm.DB {
 	newLogger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		stdlog.New(os.Stdout, "\r\n", stdlog.LstdFlags), // io writer
 		logger.Config{
 			SlowThreshold:             time.Second, // Slow SQL threshold
 			LogLevel:                  logger.Info, // Log level

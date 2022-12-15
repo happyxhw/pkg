@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/happyxhw/pkg/cx"
+	"github.com/happyxhw/pkg/log"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"

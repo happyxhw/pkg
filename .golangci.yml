@@ -1,13 +1,18 @@
 linters-settings:
   depguard:
-    list-type: blacklist
+    list-type: denylist
+    include-go-root: true
+    packages:
+      - log
+    packages-with-error-message:
+      - log: "logging is allowed only by github.com/happyxhw/pkg/log"
   dupl:
     threshold: 100
   funlen:
     lines: 100
     statements: 50
   gci:
-    local-prefixes: github.com/golangci/golangci-lint
+    local-prefixes: github.com/happyxhw/pkg
   goconst:
     min-len: 2
     min-occurrences: 2
@@ -92,13 +97,9 @@ linters:
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
-    - path: _test\.go
+    - path: _test.go
       linters:
         - gomnd
-    - path: strava/models.go
-      linters:
-        - stylecheck
-        - lll
 
 run:
   concurrency: 4
