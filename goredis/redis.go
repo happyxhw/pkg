@@ -26,6 +26,7 @@ func DefaultRDB() *redis.Client {
 // Config for go-redis
 type Config struct {
 	Host         string
+	Username     string
 	Password     string
 	DB           int
 	PoolSize     int `mapstructure:"pool_size"`
@@ -37,6 +38,7 @@ func NewRedis(redisConf *Config) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:         redisConf.Host,
 		DB:           redisConf.DB,
+		Username:     redisConf.Username,
 		Password:     redisConf.Password,
 		PoolSize:     redisConf.PoolSize,
 		MinIdleConns: redisConf.MinIdleConns,
