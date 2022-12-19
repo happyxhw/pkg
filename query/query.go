@@ -109,7 +109,7 @@ func findPage(db *gorm.DB, pp Param, out interface{}) (int64, error) {
 	}
 	queryDB := db.Session(&gorm.Session{})
 	// 1. query id
-	var ids []int
+	var ids []int64
 	err = queryDB.Offset((pageIndex-1)*pageSize).Limit(pageSize).Pluck("id", &ids).Error
 	if err != nil {
 		return 0, err
