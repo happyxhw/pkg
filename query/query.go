@@ -70,26 +70,12 @@ func findPage(tx *gorm.DB, out interface{}, pp *Param, orderFn FieldFunc, opts .
 	}
 
 	// 1. query id
-	var ids []int64
 	if pp.SortBy != "" {
 		if pp.SortBy = ParseOrder(pp.SortBy, orderFn); pp.SortBy != "" {
 			query = query.Order(pp.SortBy)
 		}
 	}
-	err = query.Offset((page-1)*size).Limit(size).Pluck("id", &ids).Error
-	if err != nil {
-		return 0, err
-	}
-	if len(ids) == 0 {
-		return 0, nil
-	}
-
-	// 2. query rows
-	query = tx.Where("id IN (?)", ids)
-	if pp.SortBy != "" {
-		query = query.Order(pp.SortBy)
-	}
-	err = query.Find(out).Error
+	err = query.Offset((page - 1) * size).Limit(size).Find(out).Error
 
 	return count, err
 }
