@@ -1,9 +1,6 @@
 package query
 
 import (
-	"net/http"
-
-	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
 
@@ -35,7 +32,7 @@ func Fields(fields ...string) Opt {
 	}
 }
 
-func WrapPageQuery(db *gorm.DB, out interface{}, pp *Param, orderFn FieldFunc, filterFn FilterFunc, opts ...Opt) (*PagingResult, error) {
+func WrapPageQuery(db *gorm.DB, out interface{}, pp *Param, orderFn FieldFunc, opts ...Opt) (*PagingResult, error) {
 	if pp.Page == 0 {
 		pp.Page = 1
 	}
@@ -43,7 +40,7 @@ func WrapPageQuery(db *gorm.DB, out interface{}, pp *Param, orderFn FieldFunc, f
 		pp.Size = 20
 	}
 
-	total, err := findPage(db, out, pp, orderFn, filterFn, opts...)
+	total, err := findPage(db, out, pp, orderFn, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +52,7 @@ func WrapPageQuery(db *gorm.DB, out interface{}, pp *Param, orderFn FieldFunc, f
 	}, nil
 }
 
-func findPage(tx *gorm.DB, out interface{}, pp *Param, orderFn FieldFunc, filterFn FilterFunc, opts ...Opt) (int64, error) {
+func findPage(tx *gorm.DB, out interface{}, pp *Param, orderFn FieldFunc, opts ...Opt) (int64, error) {
 	opt := GetOpt(opts...)
 	if len(opt.Fields) > 0 {
 		tx = tx.Select(opt.Fields)
@@ -63,13 +60,6 @@ func findPage(tx *gorm.DB, out interface{}, pp *Param, orderFn FieldFunc, filter
 	// 0. query count
 	page, size := pp.Page, pp.Size
 	query := tx.Session(&gorm.Session{})
-	if pp.Filter != "" {
-		where, params, err := ParseFilter(query, pp.Filter, filterFn)
-		if err != nil {
-			return 0, echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		}
-		query = query.Where(where, params...)
-	}
 	var count int64
 	err := query.Count(&count).Error
 	if err != nil {

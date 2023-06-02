@@ -15,6 +15,6 @@ func IsErrDuplicatedKey(err error) bool {
 	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 		return true
 	}
-	
+
 	return errors.Is(err, gorm.ErrDuplicatedKey)
 }
