@@ -2,6 +2,7 @@
 package ws
 
 import (
+	"context"
 	"net/http"
 	"sync"
 
@@ -72,9 +73,9 @@ func (s *Hub) Remove(c *Client) {
 	}
 }
 
-func (s *Hub) SendToUser(userID int64, msg *Msg) {
+func (s *Hub) SendToUser(ctx context.Context, userID int64, msg *Msg) {
 	for _, cli := range s.clients[userID] {
-		if err := cli.Send(msg); err != nil {
+		if err := cli.Send(ctx, msg); err != nil {
 			log.Warn("send msg", zap.Error(err))
 		}
 	}

@@ -44,10 +44,10 @@ type Client struct {
 }
 
 // NewClient return client instance
-func NewClient(conn *websocket.Conn, stream *Hub, id string, userID int64, readFunc func([]byte)) *Client {
+func NewClient(conn *websocket.Conn, hub *Hub, id string, userID int64, readFunc func([]byte)) *Client {
 	cli := Client{
 		conn: conn,
-		hub:  stream,
+		hub:  hub,
 
 		stopCh: make(chan struct{}, 1),
 		ch:     make(chan *Msg),
@@ -134,7 +134,6 @@ func (c *Client) startPingHandler() {
 			}
 		case msg, ok := <-c.ch:
 			if !ok {
-				c.errCh <- nil
 				return
 			}
 			err := c.conn.WriteJSON(msg)
@@ -146,15 +145,13 @@ func (c *Client) startPingHandler() {
 	}
 }
 
-func (c *Client) Send(msg *Msg) error {
+func (c *Client) Send(ctx context.Context, msg *Msg) error {
 	c.mu.Lock()
 	if c.stopped {
 		return ErrClientClosed
 	}
 	defer c.mu.Unlock()
 	var err error
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
 	select {
 	case c.ch <- msg:
 		err = <-c.errCh
