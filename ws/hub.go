@@ -17,7 +17,7 @@ type Msg struct {
 	Action       string `json:"action"`
 	ID           string `json:"id"`
 	ErrorMessage string `json:"error_message"`
-	Data         string `json:"data"`
+	Data         any    `json:"data"`
 	Timestamp    int64  `json:"timestamp"`
 }
 
