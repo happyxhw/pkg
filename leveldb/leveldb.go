@@ -37,7 +37,11 @@ func (t *LevelDB) GetObject(key []byte, out any, ro *opt.ReadOptions) error {
 	return json.Unmarshal(data, &out)
 }
 
-func (t *LevelDB) Put(key []byte, value any, wo *opt.WriteOptions) error {
+func (t *LevelDB) Put(key, value []byte, wo *opt.WriteOptions) error {
+	return t.db.Put(key, value, wo)
+}
+
+func (t *LevelDB) PutObject(key []byte, value any, wo *opt.WriteOptions) error {
 	data, err := json.Marshal(value)
 	if err != nil {
 		return err
