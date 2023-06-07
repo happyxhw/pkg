@@ -5,15 +5,17 @@ import (
 	"encoding/hex"
 	"io"
 	"os"
+	"time"
 
 	"github.com/happyxhw/pkg/util"
 )
 
 type File struct {
-	Path  string
-	MD5   string
-	Size  int64
-	Parts []*Part
+	Path       string
+	MD5        string
+	Size       int64
+	ModifyTime time.Time
+	Parts      []*Part
 }
 
 type Part struct {
@@ -30,6 +32,7 @@ func Split(in string, splitSize int64) (*File, error) {
 	var file File
 	file.Path = in
 	file.Size = fi.Size()
+	file.ModifyTime = fi.ModTime()
 	if fi.Size() <= splitSize {
 		file.MD5, err = GetFileMD5(in)
 		if err != nil {
