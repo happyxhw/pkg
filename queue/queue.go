@@ -7,6 +7,11 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
+var (
+	readPositionFlag  = []byte("_readPosition")
+	writePositionFlag = []byte("_writePosition")
+)
+
 type LevelQueue struct {
 	db            *leveldb.DB
 	mutex         sync.Mutex
@@ -24,13 +29,13 @@ func NewLevelQueue(dbPath string) (*LevelQueue, error) {
 	var readPosition uint64 = 0
 	var writePosition uint64 = 0
 
-	readBufs, err := db.Get([]byte("_readPosition"), nil)
+	readBufs, err := db.Get(readPositionFlag, nil)
 	if err != nil && err != leveldb.ErrNotFound {
 		return nil, err
 	} else if readBufs != nil {
 		readPosition = binary.BigEndian.Uint64(readBufs)
 	}
-	writeBufs, err := db.Get([]byte("_writePosition"), nil)
+	writeBufs, err := db.Get(writePositionFlag, nil)
 	if err != nil && err != leveldb.ErrNotFound {
 		return nil, err
 	} else if writeBufs != nil {
@@ -57,7 +62,7 @@ func (q *LevelQueue) Push(data []byte) (bool, error) {
 	}
 
 	binary.BigEndian.PutUint64(pos, q.writePosition+1)
-	if err := q.db.Put([]byte("_writePosition"), pos, nil); err != nil {
+	if err := q.db.Put(writePositionFlag, pos, nil); err != nil {
 		return false, err
 	}
 	q.writePosition += 1
@@ -65,11 +70,14 @@ func (q *LevelQueue) Push(data []byte) (bool, error) {
 	return true, nil
 }
 
+// Pop: Last + DeleteLast
 func (q *LevelQueue) Pop() ([]byte, error) {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
 	for q.readPosition >= q.writePosition {
+		q.readPosition = 0
+		q.writePosition = 0
 		q.cond.Wait()
 	}
 	pos := make([]byte, 8)
@@ -84,7 +92,7 @@ func (q *LevelQueue) Pop() ([]byte, error) {
 		}
 	}
 	binary.BigEndian.PutUint64(pos, q.readPosition+1)
-	err = q.db.Put([]byte("_readPosition"), pos, nil)
+	err = q.db.Put(readPositionFlag, pos, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -92,11 +100,42 @@ func (q *LevelQueue) Pop() ([]byte, error) {
 	return value, nil
 }
 
-func (q *LevelQueue) DestroyQueue() {
-	q.db.Close()
+func (q *LevelQueue) Last() ([]byte, error) {
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+
+	for q.readPosition >= q.writePosition {
+		q.readPosition = 0
+		q.writePosition = 0
+		q.cond.Wait()
+	}
+	pos := make([]byte, 8)
+	binary.BigEndian.PutUint64(pos, q.readPosition)
+	value, err := q.db.Get(pos, nil)
+	if err != nil && err != leveldb.ErrNotFound { // error
+		return nil, err
+	}
+	return value, nil
 }
 
-func (q *LevelQueue) Stats() (string, error) {
-	stats, err := q.db.GetProperty("leveldb.stats")
-	return stats, err
+func (q *LevelQueue) DeleteLast() error {
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+
+	pos := make([]byte, 8)
+	binary.BigEndian.PutUint64(pos, q.readPosition)
+	if err := q.db.Delete(pos, nil); err != nil {
+		return err
+	}
+	binary.BigEndian.PutUint64(pos, q.readPosition+1)
+	err := q.db.Put(readPositionFlag, pos, nil)
+	if err != nil {
+		return err
+	}
+	q.readPosition += 1
+	return nil
+}
+
+func (q *LevelQueue) DestroyQueue() {
+	q.db.Close()
 }
