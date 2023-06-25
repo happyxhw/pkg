@@ -14,6 +14,7 @@ type File struct {
 	Path       string
 	MD5        string
 	Size       int64
+	SplitSize  int64
 	ModifyTime time.Time
 	Parts      []*Part
 }
@@ -32,6 +33,7 @@ func Split(in string, splitSize int64) (*File, error) {
 	var file File
 	file.Path = in
 	file.Size = fi.Size()
+	file.SplitSize = splitSize
 	file.ModifyTime = fi.ModTime()
 	if fi.Size() <= splitSize {
 		file.MD5, err = GetFileMD5(in)
