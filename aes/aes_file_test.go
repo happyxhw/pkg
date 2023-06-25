@@ -4,7 +4,7 @@ import "testing"
 
 func TestEncryptFile(t *testing.T) {
 	key := []byte("cQfTjWnZr4u7x!A%D*G-KaPdRgUkXp2s")
-	err := EncryptFile("./in.txt", "./out.txt", key, true)
+	err := EncryptFile("./aes_file.go", "./out.txt", key, true)
 	if err != nil {
 		t.Error(err)
 	}

@@ -23,8 +23,8 @@ func pKCS5UnPadding(origData []byte) []byte {
 	return nil
 }
 
-// Encrypt AES加密
-func Encrypt(origData, key, iv []byte) ([]byte, error) {
+// EncryptCBC AES CBC 加密
+func EncryptCBC(origData, key, iv []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -41,8 +41,8 @@ func Encrypt(origData, key, iv []byte) ([]byte, error) {
 	return encrypted, nil
 }
 
-// Decrypt AES解密
-func Decrypt(encrypted, key, iv []byte) ([]byte, error) {
+// DecryptCBC AES CBC 解密
+func DecryptCBC(encrypted, key, iv []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err

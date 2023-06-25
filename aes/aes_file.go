@@ -41,19 +41,21 @@ func EncryptFile(in, out string, key []byte, fixedIV bool) error {
 	stream := cipher.NewCTR(block, iv)
 	for {
 		n, err := inFile.Read(buf)
-		if n > 0 {
-			stream.XORKeyStream(buf, buf[:n])
-			_, _ = outFile.Write(buf[:n])
-		}
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			return err
 		}
+		stream.XORKeyStream(buf, buf[:n])
+		if _, wErr := outFile.Write(buf[:n]); wErr != nil {
+			return wErr
+		}
 	}
 	if !fixedIV {
-		_, _ = outFile.Write(iv)
+		if _, wErr := outFile.Write(iv); wErr != nil {
+			return wErr
+		}
 	}
 
 	return nil
@@ -76,13 +78,13 @@ func DecryptFile(in, out string, key []byte, fixedIV bool) error {
 		return err
 	}
 	var iv []byte
-	var msgLen int64
+	fileLen := fi.Size()
 	if fixedIV {
 		iv = key[:block.BlockSize()]
 	} else {
 		iv = make([]byte, block.BlockSize())
-		msgLen = fi.Size() - int64(len(iv))
-		_, err = inFile.ReadAt(iv, msgLen)
+		fileLen -= int64(len(iv))
+		_, err = inFile.ReadAt(iv, fileLen)
 		if err != nil {
 			return err
 		}
@@ -96,25 +98,28 @@ func DecryptFile(in, out string, key []byte, fixedIV bool) error {
 
 	buf := make([]byte, 1024)
 	stream := cipher.NewCTR(block, iv)
+	remainingLen := fileLen
 	for {
-		n, err := inFile.Read(buf)
-		if n > 0 {
-			if !fixedIV {
-				if n > int(msgLen) {
-					n = int(msgLen)
-				}
-				msgLen -= int64(n)
-			}
-			stream.XORKeyStream(buf, buf[:n])
-			_, _ = outFile.Write(buf[:n])
+		if remainingLen <= 0 {
+			break
 		}
+		n, err := inFile.Read(buf)
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			return err
 		}
+		if !fixedIV {
+			if n > int(remainingLen) {
+				n = int(remainingLen)
+			}
+			remainingLen -= int64(n)
+		}
+		stream.XORKeyStream(buf, buf[:n])
+		if _, wErr := outFile.Write(buf[:n]); wErr != nil {
+			return wErr
+		}
 	}
-
 	return nil
 }
