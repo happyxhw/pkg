@@ -1,19 +1,33 @@
 package aes
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
 
 func TestEncryptFile(t *testing.T) {
 	key := []byte("cQfTjWnZr4u7x!A%D*G-KaPdRgUkXp2s")
 	err := EncryptFile("./aes_file.go", "./out.txt", key, true)
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
+
+	err = DecryptFile("./out.txt", "./in_2.txt", key, true)
+	require.NoError(t, err)
 }
 
-func TestDecryptFile(t *testing.T) {
-	key := []byte("cQfTjWnZr4u7x!A%D*G-KaPdRgUkXp2s")
-	err := DecryptFile("./out.txt", "./in_2.txt", key, true)
-	if err != nil {
-		t.Error(err)
-	}
+func TestEncryptRSAFile(t *testing.T) {
+	privatePath, publicPath := "./id_rsa", "./id_rsa.pub"
+	err := GenRsaKey(4096, privatePath, publicPath, nil)
+	require.NoError(t, err)
+
+	privateKey, err := ReadPrivateKey(privatePath, nil)
+	require.NoError(t, err)
+	publicKey, err := ReadPublicKey(publicPath)
+	require.NoError(t, err)
+
+	err = EncryptFileWithRSA("./aes_file.go", "./out.txt", publicKey)
+	require.NoError(t, err)
+
+	err = DecryptFileWithRSA("./out.txt", "./in_2.txt", privateKey)
+	require.NoError(t, err)
 }
