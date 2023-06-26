@@ -64,3 +64,7 @@ func (t *LevelDB) Iter(fn func(key, value []byte), slice *util.Range, ro *opt.Re
 	iter.Release()
 	return iter.Error()
 }
+
+func (t *LevelDB) Close() error {
+	return t.db.Close()
+}

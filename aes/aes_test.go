@@ -9,7 +9,7 @@ import (
 )
 
 func TestEncryptCBC(t *testing.T) {
-	key, err := Gen256Key()
+	key, err := GenAesKey(32)
 	require.NoError(t, err)
 
 	source := "hello world"
@@ -27,7 +27,7 @@ func TestEncryptCBC(t *testing.T) {
 }
 
 func TestEncryptGCM(t *testing.T) {
-	key, err := Gen256Key()
+	key, err := GenAesKey(32)
 	require.NoError(t, err)
 
 	source := "hello world"

@@ -1,11 +1,15 @@
 package aes
 
-import "crypto/rand"
+import (
+	"crypto/rand"
+	"io"
+)
 
 // GenKey 生成密钥对
-func Gen256Key() ([]byte, error) {
-	key := make([]byte, 32)
-	if _, err := rand.Read(key); err != nil {
+func GenAesKey(size int) ([]byte, error) {
+	key := make([]byte, size)
+	_, err := io.ReadFull(rand.Reader, key)
+	if err != nil {
 		return nil, err
 	}
 	return key, nil

@@ -128,9 +128,9 @@ func DecryptFile(in, out string, key []byte, fixedIV bool) error {
 	return nil
 }
 
-func EncryptFileWithRSA(in, out string, pk *rsa.PublicKey) error {
+func EncryptFileWithRSA(in, out string, keyKey []byte, pk *rsa.PublicKey) error {
 	// 随机生成 key 和 iv
-	key, err := Gen256Key()
+	key, err := GenAesKey(32)
 	if err != nil {
 		return err
 	}
@@ -139,8 +139,7 @@ func EncryptFileWithRSA(in, out string, pk *rsa.PublicKey) error {
 	if err != nil {
 		return err
 	}
-	iv := make([]byte, block.BlockSize())
-	_, err = io.ReadFull(rand.Reader, iv)
+	iv, err := GenAesKey(block.BlockSize())
 	if err != nil {
 		return err
 	}
@@ -160,6 +159,12 @@ func EncryptFileWithRSA(in, out string, pk *rsa.PublicKey) error {
 	tmp := make([]byte, 0, len(key)+len(iv))
 	tmp = append(tmp, key...)
 	tmp = append(tmp, iv...)
+	// aes 加密 key iv
+	tmp, err = EncryptGCM(tmp, keyKey)
+	if err != nil {
+		return err
+	}
+	// rsa 加密 key iv
 	encTmp, err := RsaEncrypt(tmp, pk)
 	if err != nil {
 		return err
@@ -192,7 +197,7 @@ func EncryptFileWithRSA(in, out string, pk *rsa.PublicKey) error {
 	return nil
 }
 
-func DecryptFileWithRSA(in, out string, pk *rsa.PrivateKey) error {
+func DecryptFileWithRSA(in, out string, keyKey []byte, pk *rsa.PrivateKey) error {
 	inFile, err := os.Open(in)
 	if err != nil {
 		return err
@@ -212,7 +217,13 @@ func DecryptFileWithRSA(in, out string, pk *rsa.PrivateKey) error {
 	if err != nil {
 		return err
 	}
+	// rsa 解密
 	keyIV, err := RsaDecrypt(tmp[:n], pk)
+	if err != nil {
+		return err
+	}
+	// aes 解密
+	keyIV, err = DecryptGCM(keyIV, keyKey)
 	if err != nil {
 		return err
 	}

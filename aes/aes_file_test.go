@@ -25,9 +25,10 @@ func TestEncryptRSAFile(t *testing.T) {
 	publicKey, err := ReadPublicKey(publicPath)
 	require.NoError(t, err)
 
-	err = EncryptFileWithRSA("./aes_file.go", "./out.txt", publicKey)
+	key := []byte("cQfTjWnZr4u7x!A%D*G-KaPdRgUkXp2s")
+	err = EncryptFileWithRSA("./aes_file.go", "./out.txt", key, publicKey)
 	require.NoError(t, err)
 
-	err = DecryptFileWithRSA("./out.txt", "./in_2.txt", privateKey)
+	err = DecryptFileWithRSA("./out.txt", "./in_2.txt", key, privateKey)
 	require.NoError(t, err)
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func TestGen256Key(t *testing.T) {
-	key, err := Gen256Key()
+	key, err := GenAesKey(32)
 	require.NoError(t, err)
 	encryptedB64 := base64.StdEncoding.EncodeToString(key)
 	fmt.Printf("debug-x: %s\n", encryptedB64)
