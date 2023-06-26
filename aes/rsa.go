@@ -10,7 +10,7 @@ import (
 )
 
 // GenRsaKey 生成密钥对
-func GenRsaPrivateKey(bits int, privatePath string, pwd []byte) error {
+func GenRsaPrivateKey(bits int, privatePath string, keyKey []byte) error {
 	// 1. 生成私钥文件
 	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
@@ -32,9 +32,9 @@ func GenRsaPrivateKey(bits int, privatePath string, pwd []byte) error {
 	}
 	defer func() { _ = privateFile.Close() }()
 
-	if pwd != nil {
+	if keyKey != nil {
 		data := pem.EncodeToMemory(block)
-		encryptData, err2 := EncryptGCM(data, Gen256KeyFromPassword(pwd))
+		encryptData, err2 := EncryptGCM(data, keyKey)
 		if err2 != nil {
 			return err2
 		}
@@ -52,8 +52,8 @@ func GenRsaPrivateKey(bits int, privatePath string, pwd []byte) error {
 	return nil
 }
 
-func GenRsaPublicKey(bits int, privatePath, publicPath string, pwd []byte) error {
-	privateKey, err := ReadPrivateKey(privatePath, pwd)
+func GenRsaPublicKey(bits int, privatePath, publicPath string, keyKey []byte) error {
+	privateKey, err := ReadPrivateKey(privatePath, keyKey)
 	if err != nil {
 		return err
 	}
@@ -93,13 +93,13 @@ func ReadPublicKey(keyPath string) (*rsa.PublicKey, error) {
 	return x509.ParsePKCS1PublicKey(block.Bytes)
 }
 
-func ReadPrivateKey(keyPath string, pwd []byte) (*rsa.PrivateKey, error) {
+func ReadPrivateKey(keyPath string, keyKey []byte) (*rsa.PrivateKey, error) {
 	key, err := os.ReadFile(keyPath)
 	if err != nil {
 		return nil, err
 	}
-	if pwd != nil {
-		key, err = DecryptGCM(key, Gen256KeyFromPassword(pwd))
+	if keyKey != nil {
+		key, err = DecryptGCM(key, keyKey)
 		if err != nil {
 			return nil, err
 		}

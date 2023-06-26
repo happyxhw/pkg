@@ -40,12 +40,12 @@ func TestRsaEncrypt(t *testing.T) {
 }
 
 func TestRsaEncryptWithPassword(t *testing.T) {
-	passwd := []byte("123")
+	key := Gen256KeyFromPassword([]byte("123"))
 	privatePath, publicPath := "./id_rsa", "./id_rsa.pub"
-	require.NoError(t, GenRsaPrivateKey(4096, privatePath, passwd))
-	require.NoError(t, GenRsaPublicKey(4096, privatePath, publicPath, passwd))
+	require.NoError(t, GenRsaPrivateKey(4096, privatePath, key))
+	require.NoError(t, GenRsaPublicKey(4096, privatePath, publicPath, key))
 
-	privateKey, err := ReadPrivateKey(privatePath, passwd)
+	privateKey, err := ReadPrivateKey(privatePath, key)
 	require.NoError(t, err)
 	publicKey, err := ReadPublicKey(publicPath)
 	require.NoError(t, err)
