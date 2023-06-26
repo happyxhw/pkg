@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewLevelQueue(t *testing.T) {
-	q, err := NewLevelQueue("/tmp/database")
+	q, err := NewLevelQueue("/tmp/database", 10)
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +45,7 @@ func TestNewLevelQueue(t *testing.T) {
 }
 
 func TestNewLevelQueueLast(t *testing.T) {
-	q, err := NewLevelQueue("/tmp/database")
+	q, err := NewLevelQueue("/tmp/database", 10)
 	if err != nil {
 		panic(err)
 	}

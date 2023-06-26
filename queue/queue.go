@@ -18,9 +18,10 @@ type LevelQueue struct {
 	cond          *sync.Cond
 	readPosition  uint64
 	writePosition uint64
+	capacity      int
 }
 
-func NewLevelQueue(dbPath string) (*LevelQueue, error) {
+func NewLevelQueue(dbPath string, capacity int) (*LevelQueue, error) {
 	db, err := leveldb.OpenFile(dbPath, nil)
 	if err != nil {
 		return nil, err
@@ -46,6 +47,7 @@ func NewLevelQueue(dbPath string) (*LevelQueue, error) {
 		db:            db,
 		readPosition:  readPosition,
 		writePosition: writePosition,
+		capacity:      capacity,
 	}
 	q.cond = sync.NewCond(&q.mutex)
 	return &q, nil
@@ -54,6 +56,12 @@ func NewLevelQueue(dbPath string) (*LevelQueue, error) {
 func (q *LevelQueue) Push(data []byte) (bool, error) {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
+
+	if q.capacity > 0 {
+		for q.writePosition-q.readPosition >= uint64(q.capacity) {
+			q.cond.Wait()
+		}
+	}
 
 	pos := make([]byte, 8)
 	binary.BigEndian.PutUint64(pos, q.writePosition)
@@ -97,6 +105,7 @@ func (q *LevelQueue) Pop() ([]byte, error) {
 		return nil, err
 	}
 	q.readPosition += 1
+	q.cond.Signal()
 	return value, nil
 }
 
@@ -133,6 +142,7 @@ func (q *LevelQueue) DeleteLast() error {
 		return err
 	}
 	q.readPosition += 1
+	q.cond.Signal()
 	return nil
 }
 
