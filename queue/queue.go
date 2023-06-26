@@ -146,6 +146,13 @@ func (q *LevelQueue) DeleteLast() error {
 	return nil
 }
 
+func (q *LevelQueue) Len() int {
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+
+	return int(q.writePosition - q.readPosition)
+}
+
 func (q *LevelQueue) DestroyQueue() {
 	q.db.Close()
 }
