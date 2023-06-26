@@ -10,7 +10,7 @@ import (
 )
 
 // GenRsaKey 生成密钥对
-func GenRsaKey(bits int, privatePath, publicPath string, pwd []byte) error {
+func GenRsaPrivateKey(bits int, privatePath string, pwd []byte) error {
 	// 1. 生成私钥文件
 	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
@@ -49,13 +49,20 @@ func GenRsaKey(bits int, privatePath, publicPath string, pwd []byte) error {
 		}
 	}
 
-	// 5. 使用pem编码, 并将数据写入文件中
+	return nil
+}
+
+func GenRsaPublicKey(bits int, privatePath, publicPath string, pwd []byte) error {
+	privateKey, err := ReadPrivateKey(privatePath, pwd)
+	if err != nil {
+		return err
+	}
 
 	// 1. 生成公钥文件
 	publicKey := privateKey.PublicKey
 	derPublicStream := x509.MarshalPKCS1PublicKey(&publicKey)
 
-	block = &pem.Block{
+	block := &pem.Block{
 		Type:  "RSA PUBLIC KEY",
 		Bytes: derPublicStream,
 	}

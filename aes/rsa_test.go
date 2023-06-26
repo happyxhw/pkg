@@ -10,14 +10,14 @@ import (
 
 func TestGenRsaKey(t *testing.T) {
 	privatePath, publicPath := "./id_rsa", "./id_rsa.pub"
-	err := GenRsaKey(4096, privatePath, publicPath, nil)
-	require.NoError(t, err)
+	require.NoError(t, GenRsaPrivateKey(4096, privatePath, nil))
+	require.NoError(t, GenRsaPublicKey(4096, privatePath, publicPath, nil))
 }
 
 func TestRsaEncrypt(t *testing.T) {
 	privatePath, publicPath := "./id_rsa", "./id_rsa.pub"
-	err := GenRsaKey(4096, privatePath, publicPath, nil)
-	require.NoError(t, err)
+	require.NoError(t, GenRsaPrivateKey(4096, privatePath, nil))
+	require.NoError(t, GenRsaPublicKey(4096, privatePath, publicPath, nil))
 
 	privateKey, err := ReadPrivateKey(privatePath, nil)
 	require.NoError(t, err)
@@ -42,8 +42,8 @@ func TestRsaEncrypt(t *testing.T) {
 func TestRsaEncryptWithPassword(t *testing.T) {
 	passwd := []byte("123")
 	privatePath, publicPath := "./id_rsa", "./id_rsa.pub"
-	err := GenRsaKey(4096, privatePath, publicPath, passwd)
-	require.NoError(t, err)
+	require.NoError(t, GenRsaPrivateKey(4096, privatePath, passwd))
+	require.NoError(t, GenRsaPublicKey(4096, privatePath, publicPath, passwd))
 
 	privateKey, err := ReadPrivateKey(privatePath, passwd)
 	require.NoError(t, err)

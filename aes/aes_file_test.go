@@ -17,8 +17,8 @@ func TestEncryptFile(t *testing.T) {
 
 func TestEncryptRSAFile(t *testing.T) {
 	privatePath, publicPath := "./id_rsa", "./id_rsa.pub"
-	err := GenRsaKey(4096, privatePath, publicPath, nil)
-	require.NoError(t, err)
+	require.NoError(t, GenRsaPrivateKey(4096, privatePath, nil))
+	require.NoError(t, GenRsaPublicKey(4096, privatePath, publicPath, nil))
 
 	privateKey, err := ReadPrivateKey(privatePath, nil)
 	require.NoError(t, err)
