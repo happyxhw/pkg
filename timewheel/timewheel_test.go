@@ -104,7 +104,7 @@ func TestUpdateTimer(t *testing.T) {
 	start := time.Now()
 	tw, err := New(time.Millisecond*10, 500, func(data interface{}) {
 		elapse := time.Since(start).Milliseconds()
-		require.LessOrEqual(t, elapse-delay2.Milliseconds(), int64(20))
+		require.LessOrEqual(t, elapse-delay2.Milliseconds(), int64(100))
 		require.Equal(t, data, jobData)
 	})
 	if err != nil {

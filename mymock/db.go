@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	stdlog "log" //nolint:depguard
+	stdlog "log"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"gorm.io/driver/postgres"
