@@ -107,7 +107,7 @@ issues:
         - gomnd
 
 run:
-  concurrency: 4
+  concurrency: 1
   timeout: 30m
   tests: false
   skip-dirs:

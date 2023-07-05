@@ -1,2 +1,6 @@
 kind: template
 load: golang.yaml
+data:
+  workspace_path: /drone/golang/pkg
+  node: openwrt
+  host_volume_path: /home/happyxhw/tmp/drone/go-cache
