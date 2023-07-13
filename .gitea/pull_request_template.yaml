@@ -21,7 +21,7 @@ body:
       required: true
 
   - type: textarea
-    id: broken changes
+    id: broken-changes
     attributes:
       label: Broken changes
       description: Broken changes
