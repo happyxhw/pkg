@@ -21,11 +21,11 @@ body:
       required: true
 
   - type: textarea
-    id: broken-changes
+    id: description
     attributes:
-      label: Broken changes
-      description: Broken changes
-      placeholder: Broken changes
+      label: Description
+      description: Description
+      placeholder: Description
       value: ""
       render: markdown
     validations:
