@@ -153,7 +153,14 @@ func parseComp(tx *gorm.DB, op, filter string, params []interface{},
 		if !handles[0](tx, col, op) {
 			return "", nil, fmt.Errorf("(%s, %s) not supported", col, op)
 		}
+	} else {
+		if col2 := re.ReplaceAllString(col, ""); col2 == "" { // 替换特殊字符
+			return "", nil, fmt.Errorf("(%s, %s) not supported", col2, op)
+		} else {
+			col = col2
+		}
 	}
+
 	switch {
 	case compRangeOp[op]:
 		var p []interface{}
@@ -170,7 +177,7 @@ func parseComp(tx *gorm.DB, op, filter string, params []interface{},
 		return fmt.Sprintf("%s like ?", col), params, nil
 	case compOp[op] == "ends":
 		params = append(params, "%"+strings.TrimSpace(t[1]))
-		return fmt.Sprintf("%s like?", col), params, nil
+		return fmt.Sprintf("%s like ?", col), params, nil
 	default:
 		params = append(params, strings.TrimSpace(t[1]))
 		return fmt.Sprintf("%s %s ?", col, compOp[op]), params, nil
