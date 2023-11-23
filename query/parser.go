@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-
-	"gorm.io/gorm"
 )
 
 var (
@@ -14,7 +12,7 @@ var (
 )
 
 type FieldFunc func(string) string
-type FilterFunc func(*gorm.DB, string, string) bool
+type FilterFunc func(string, string) bool
 
 func ParseOrder(sortBy string, handles ...FieldFunc) string {
 	items := strings.Split(sortBy, ",")
@@ -64,19 +62,14 @@ var compOp = map[string]string{
 	"in":     "in",
 	"nin":    "not in",
 	"like":   "like",
-	"starts": "starts",
-	"ends":   "ends",
-}
-
-var compRangeOp = map[string]bool{
-	"in":  true,
-	"nin": true,
+	"starts": "like",
+	"ends":   "like",
 }
 
 // or(and(eq(name,h),le(age,10),or(eq(name,y),le(age,11))),or(in(status,0,1,2),nin(role,1,2,3)))
-func ParseFilter(tx *gorm.DB, filter string, handles ...FilterFunc) (string, []interface{}, error) { //nolint:gocyclo,gocritic
+func ParseFilter(filter string, handles ...FilterFunc) (string, []any, error) { //nolint:gocyclo,gocritic
 	var stack []string
-	var params []interface{}
+	var params []any
 	var err error
 	var gOp string
 	for i := 0; i < len(filter); {
@@ -99,7 +92,7 @@ func ParseFilter(tx *gorm.DB, filter string, handles ...FilterFunc) (string, []i
 					if filter[j] != ')' {
 						continue
 					}
-					gOp, params, err = parseComp(tx, op, filter[i+1:j], params, handles...)
+					gOp, params, err = parseComp(op, filter[i+1:j], params, handles...)
 					if err != nil {
 						return "", nil, err
 					}
@@ -139,47 +132,43 @@ func ParseFilter(tx *gorm.DB, filter string, handles ...FilterFunc) (string, []i
 	return stack[0], params, nil
 }
 
-// 转化为 gorm 语句
+// 转化为 gorm where 语句
 //
 //nolint:gocritic
-func parseComp(tx *gorm.DB, op, filter string, params []interface{},
-	handles ...FilterFunc) (string, []interface{}, error) {
+func parseComp(op, filter string, params []any,
+	handles ...FilterFunc) (string, []any, error) {
 	t := strings.Split(filter, ",")
 	if len(t) < 2 {
 		return "", params, errors.New("incorrect filter syntax: " + filter)
 	}
 	col := strings.TrimSpace(t[0])
 	if len(handles) > 0 {
-		if !handles[0](tx, col, op) {
+		if !handles[0](col, op) {
 			return "", nil, fmt.Errorf("(%s, %s) not supported", col, op)
 		}
 	} else {
-		if col2 := re.ReplaceAllString(col, ""); col2 == "" { // 替换特殊字符
+		col2 := re.ReplaceAllString(col, "")
+		if col2 == "" { // 替换特殊字符
 			return "", nil, fmt.Errorf("(%s, %s) not supported", col2, op)
-		} else {
-			col = col2
 		}
+		col = col2
 	}
-
-	switch {
-	case compRangeOp[op]:
-		var p []interface{}
+	op = compOp[op]
+	switch op {
+	case "in", "not in":
+		var p []any
 		for i := 1; i < len(t); i++ {
 			p = append(p, strings.TrimSpace(t[i]))
 		}
 		params = append(params, p)
-		return fmt.Sprintf("%s %s ?", col, compOp[op]), params, nil
-	case compOp[op] == "like":
+	case "like":
 		params = append(params, "%"+strings.TrimSpace(t[1])+"%")
-		return fmt.Sprintf("%s %s ?", col, compOp[op]), params, nil
-	case compOp[op] == "starts":
+	case "starts":
 		params = append(params, strings.TrimSpace(t[1])+"%")
-		return fmt.Sprintf("%s like ?", col), params, nil
-	case compOp[op] == "ends":
+	case "ends":
 		params = append(params, "%"+strings.TrimSpace(t[1]))
-		return fmt.Sprintf("%s like ?", col), params, nil
 	default:
 		params = append(params, strings.TrimSpace(t[1]))
-		return fmt.Sprintf("%s %s ?", col, compOp[op]), params, nil
 	}
+	return fmt.Sprintf("%s %s ?", col, op), params, nil
 }
