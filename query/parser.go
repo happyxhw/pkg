@@ -149,7 +149,7 @@ func parseComp(op, filter string, params []any,
 	} else {
 		col2 := re.ReplaceAllString(col, "")
 		if col2 == "" { // 替换特殊字符
-			return "", nil, fmt.Errorf("(%s, %s) not supported", col2, op)
+			return "", nil, fmt.Errorf("(%s, %s) not supported", col, op)
 		}
 		col = col2
 	}
