@@ -15,7 +15,7 @@ func TestEncryptFile(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestEncryptRSAFile(t *testing.T) {
+func TestEncryptFileWithRSA(t *testing.T) {
 	privatePath, publicPath := "./id_rsa", "./id_rsa.pub"
 	require.NoError(t, GenRsaPrivateKey(4096, privatePath, nil))
 	require.NoError(t, GenRsaPublicKey(4096, privatePath, publicPath, nil))
@@ -31,4 +31,23 @@ func TestEncryptRSAFile(t *testing.T) {
 
 	err = DecryptFileWithRSA("./out.txt", "./in_2.txt", key, privateKey)
 	require.NoError(t, err)
+}
+
+func TestEncryptFileAndPathWithRSA(t *testing.T) {
+	privatePath, publicPath := "./id_rsa", "./id_rsa.pub"
+	require.NoError(t, GenRsaPrivateKey(4096, privatePath, nil))
+	require.NoError(t, GenRsaPublicKey(4096, privatePath, publicPath, nil))
+
+	privateKey, err := ReadPrivateKey(privatePath, nil)
+	require.NoError(t, err)
+	publicKey, err := ReadPublicKey(publicPath)
+	require.NoError(t, err)
+
+	key := []byte("cQfTjWnZr4u7x!A%D*G-KaPdRgUkXp2s")
+	err = EncryptFileAndPathWithRSA("./in.txt", "./out.txt", key, publicKey)
+	require.NoError(t, err)
+
+	path, err := DecryptFileAndPathWithRSA("./out.txt", "", key, privateKey)
+	require.NoError(t, err)
+	require.Equal(t, path, "./in.txt")
 }
