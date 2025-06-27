@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 const bufLen = 32 * 1024
@@ -392,9 +393,13 @@ func DecryptFileAndPathWithRSA(in, out string, keyKey []byte, pk *rsa.PrivateKey
 	}
 	if out == "" {
 		out = string(pathDec)
+		dir := filepath.Dir(out)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return "", err
+		}
 	}
 
-	outFile, err := os.OpenFile(string(out), os.O_RDWR|os.O_CREATE, 0755)
+	outFile, err := os.OpenFile(out, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		return "", err
 	}
